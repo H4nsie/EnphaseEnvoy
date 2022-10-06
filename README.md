@@ -26,7 +26,14 @@ sudo service domoticz.sh restart
 Open the Domoticz interface and go to: **Setup** > **Hardware**. You can add new Hardware add the bottom, in the list of hardware types choose for: **Enphase Envoy with LAN interface - with individual inverters**.
 
 Fill out the parameters shown in the form. 
-**NOTE** The user/pass for your Envoy is usually: Username = **envoy** and pass is **[the last 6 digits from the Envoy's serial]** (When you start the plugin whout the credentials, your serial is logged in Domoticz log)
+
+**NOTE** The user/pass for your Envoy is usually: 
+
+Username = **envoy**
+
+pass is **[the last 6 digits from the Envoy's serial]** 
+
+(When you start the plugin whout the credentials, your serial is logged in Domoticz log)
 
 Updating
 --------
