@@ -39,6 +39,6 @@ Updating
 --------
 Login to a shell, go to the plugin directory inside the domoticz plugin directory and execute git pull:
 ```bash
-cd https://github.com/H4nsie/EnphaseEnvoy.git
+cd domoticz/plugins/EnphaseEnvoy
 git pull
 ```
