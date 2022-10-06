@@ -31,6 +31,6 @@ Updating
 --------
 Login to a shell, go to the plugin directory inside the domoticz plugin directory and execute git pull:
 ```bash
-cd domoticz/plugins/domoticz-GoodWeSEMS
+cd https://github.com/H4nsie/EnphaseEnvoy.git
 git pull
 ```
