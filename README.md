@@ -11,12 +11,6 @@ Installation and setup
 
 Follow the Domoticz guide on [Using Python Plugins](https://www.domoticz.com/wiki/Using_Python_plugins). Check limitations on the bottom of the page.
 
-Login to a shell, go to the domoticz plugin directory and clone this repository (eith SSH, requires git account):
-```bash
-cd domoticz/plugins
-git clone https://github.com/H4nsie/EnphaseEnvoy.git
-```
-
 Login to a shell, go to the domoticz plugin directory and clone this repository (with https, requires no git account):
 ```bash
 cd domoticz/plugins
