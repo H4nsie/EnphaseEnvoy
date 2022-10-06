@@ -3,7 +3,7 @@ Enphase Envoy with LAN interface - **with individual inverters** (Domoticz plugi
 
 This Domoticz plugin reads the Enphase Envoy interface and the individual micro inverters at the solar panels. The individual panels are polled and their power generated is updated in Domoticz. If new microinvertes are addes to your systen, they automaticaly are added as new 'usage' devices in your Domoticz.
 
-
+![alt text](https://github.com/H4nsie/EnphaseEnvoy/blob/main/images/sample screenshot.png?raw=true)
 
 
 Installation and setup
