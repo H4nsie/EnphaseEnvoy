@@ -8,6 +8,7 @@ This Domoticz plugin reads the Enphase Envoy interface and the individual micro 
 
 Installation and setup
 ----------------------
+Note: User credentials are required for the Envoy. In most cases is the username **envoy** and the password are the last 6 digits of the serialnumber of the Envoy. (When you start the plugin without entering credentials in the parameters, you can find this serial in your Domoticz log.)
 
 Follow the Domoticz guide on [Using Python Plugins](https://www.domoticz.com/wiki/Using_Python_plugins). Check limitations on the bottom of the page.
 
