@@ -3,10 +3,11 @@
 # Author: Hans van der Heijden
 #
 # Version
-# 1.0.0 - initial release
+# 1.0.1 - Any corrections - 9 oct 2022
+# 1.0.0 - initial release - oct 2022
 
 """
-<plugin key="Envoy2" name="Enphase Envoy with LAN interface - with individual inverters" author="Hans van der Heijden" version="1.0.0" wikilink="" externallink="https://github.com/H4nsie/EnphaseEnvoy.git">
+<plugin key="EnphaseEnvoy" name="Enphase Envoy with LAN interface - with individual inverters" author="Hans van der Heijden" version="1.0.1" wikilink="" externallink="https://github.com/H4nsie/EnphaseEnvoy.git">
     <params>
         <param field="Address" label="IP" width="250px" required="true"/>
         <param field="Username" label="Username" width="250px" required="true"/>
@@ -71,11 +72,6 @@ class BasePlugin:
             Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
             self.running = False
             return
-        
-
-
-
-
 
 
     def getData(self):
@@ -101,7 +97,7 @@ class BasePlugin:
         else:
             Domoticz.Error( 'Could not connect to Envoy on {}, please check connection'.format(Parameters["Address"]))
         
-        # GET INVERTER WATTS (credentials needed)
+        # GET INVERTER PRODUCTION (credentials needed)
         jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' , auth=HTTPDigestAuth(Parameters["Username"], Parameters["Password"]))
 
         if (jsoninverters.status_code == 200):
