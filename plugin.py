@@ -7,7 +7,7 @@
 # 1.0.0 - initial release - oct 2022
 
 """
-<plugin key="EnphaseEnvoy" name="Enphase Envoy with LAN interface - with individual inverters" author="Hans van der Heijden" version="1.0.1" wikilink="" externallink="https://github.com/H4nsie/EnphaseEnvoy.git">
+<plugin key="Envoy2" name="Enphase Envoy with LAN interface - with individual inverters" author="Hans van der Heijden" version="1.0.1" wikilink="" externallink="https://github.com/H4nsie/EnphaseEnvoy.git">
     <params>
         <param field="Address" label="IP" width="250px" required="true"/>
         <param field="Username" label="Username" width="250px" required="true"/>
