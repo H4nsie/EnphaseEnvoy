@@ -3,7 +3,7 @@
 # Author: Hans van der Heijden
 #
 # Version
-# 1.0.1 - Any corrections - 9 oct 2022
+# 1.0.1 - minor corrections - 9 oct 2022
 # 1.0.0 - initial release - oct 2022
 
 """
