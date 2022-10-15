@@ -1,17 +1,24 @@
-# Enphase Envoy with LAN interface - with individual inverters
+# Enphase Enphase Envoy LAN micro inverters
 #
-# Author: Hans van der Heijden
+# Author: H4nsie
 #
 # Version
-# 1.0.1 - minor corrections - 9 oct 2022
+# 1.0.3 - now using 243 as return devices - 15 oct 2022
+# 1.0.2 - minor corrections - 9 oct 2022
 # 1.0.0 - initial release - oct 2022
 
 """
-<plugin key="Envoy2" name="Enphase Envoy with LAN interface - with individual inverters" author="Hans van der Heijden" version="1.0.1" wikilink="" externallink="https://github.com/H4nsie/EnphaseEnvoy.git">
+<plugin key="EnphaseEnvoy" name="Enphase Envoy - with micro inverters" author="H4nsie" version="1.0.3" wikilink="http://www.domoticz.com/" externallink="https://github.com/H4nsie/EnphaseEnvoy">
+    <description>
+        <h2>Enphase Envoy - with micro inverters</h2><br/>
+        <ul style="list-style-type:square">
+            <li>For login credentials use 'envoy' as username, and 'last 6 digits serial (see log)' as password</li>
+        </ul>
+    </description>
     <params>
         <param field="Address" label="IP" width="250px" required="true"/>
-        <param field="Username" label="Username" width="250px" required="true"/>
-        <param field="Password" label="Password" width="250px" required="true"/>
+        <param field="Username" label="Username" width="250px" />
+        <param field="Password" label="Password" width="250px" />
         <param field="Mode5" label="Log level" width="100px">
             <options>
                 <option label="Normal" value="Normal" default="true" />
@@ -57,7 +64,7 @@ class BasePlugin:
 
 		# create P1 usage device if not yet created
         if (len(Devices) == 0):
-            Domoticz.Device(Name="Production", Unit=1, Type=250, Subtype=1, Used=1, DeviceID='EnphaseEnvoyUsage').Create()
+            Domoticz.Device(Name="total", Unit=1, Type=250, Subtype=1, Used=1, DeviceID='EnphaseEnvoyUsage').Create()
             UpdateDevice(Unit=1, nValue=0, sValue="0;0;0;0;0", TimedOut=0)
             Domoticz.Debug("Device EnphaseEnvoyUsage created")
             
@@ -107,20 +114,23 @@ class BasePlugin:
             for inverter in inverters:
                 Domoticz.Debug( 'Inverter: ' + inverter['serialNumber'] + ' Lastreport: ' + str(inverter['lastReportDate'])  + ' Reports: ' + str(inverter['lastReportWatts']) )
                 
-                # Check if device with given deviceid=serial and devicetype is already present, otherwise create it
+                # Check if device with given deviceid=serial and devicetype is already present and update value, otherwise create it
                 DeviceFound = False
                 for Device in Devices:
-                    if Devices[Device].DeviceID == str(inverter['serialNumber']) and Devices[Device].Type == 248:
+                    if Devices[Device].DeviceID == str(inverter['serialNumber']) and Devices[Device].Type == 243:
+                        #Domoticz.Log(dir(Devices[Device]))
+                        #for attr in dir(Devices[Device]):
+                            #Domoticz.Log(str(Devices[Device].DeviceID)+"Devices[Device].%s = %r" % (attr, getattr(Devices[Device], attr)))
                         DeviceFound = True
                         #update the Watts for this SN
-                        Domoticz.Log("Inverter {} read {} Watts".format(inverter['serialNumber'], inverter['lastReportWatts']))
-                        UpdateDevice(Unit=Devices[Device].Unit, nValue=0, sValue=inverter['lastReportWatts'], TimedOut=0)
+                        Domoticz.Log("Inverter {} reads {} Watts".format(inverter['serialNumber'], inverter['lastReportWatts']))
+                        UpdateDevice(Unit=Devices[Device].Unit, nValue=0, sValue=str(inverter['lastReportWatts'])+";0", TimedOut=0)
                         
-				# create new device for this SN
+				# CREATE new device for this SN
                 if not DeviceFound:
                     iUnit=len(Devices)+1
-                    Domoticz.Device(Unit=iUnit, DeviceID=str(inverter['serialNumber']), Name="Solar "+str(inverter['serialNumber']), Type=248, Subtype=1, Used=1).Create()
-                    UpdateDevice(Unit=iUnit, nValue=0, sValue=inverter['lastReportWatts'], TimedOut=0)
+                    Domoticz.Device(Unit=iUnit, DeviceID=str(inverter['serialNumber']), Name="panel "+str(inverter['serialNumber']), TypeName='kWh', Subtype=29, Used=1, Switchtype=4, Options={'EnergyMeterMode':'1'}).Create()
+                    UpdateDevice(Unit=iUnit, nValue=0, sValue=str(inverter['lastReportWatts'])+";0", TimedOut=0)
                     Domoticz.Log( 'Device Solar {} created'.format(inverter['serialNumber']))
               
         else:
