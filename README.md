@@ -1,9 +1,9 @@
 # EnphaseEnvoy
-Enphase Envoy with LAN interface - **with individual inverters** (Domoticz plugin)
+Enphase Envoy with LAN interface - **with individual micro inverters** (Domoticz plugin)
 
 Monitor production (and log over time) each individual solar panel.
 
-This Domoticz plugin reads the Enphase Envoy interface and the individual micro inverters at the solar panels. The individual panels are polled and their power generated is updated in Domoticz. If new micro invertes (per solar panel) are added to your system, they automaticaly are added as new 'usage' devices in your Domoticz.
+This Domoticz plugin reads the Enphase Envoy interface and the individual micro inverters at the solar panels. The individual panels are polled and their power generated is updated in Domoticz. If new micro invertes (per solar panel) are added to your system, they automaticaly are added as new 'kWh' devices in your Domoticz.
 
 ![alt text](https://github.com/H4nsie/EnphaseEnvoy/blob/main/images/sample_screenshot.png?raw=true)
 
@@ -27,7 +27,7 @@ or
 sudo service domoticz.sh restart
 ```
 
-Open the Domoticz interface and go to: **Setup** > **Hardware**. You can add new Hardware add the bottom, in the list of hardware types choose for: **Enphase Envoy with LAN interface - with individual inverters**.
+Open the Domoticz interface and go to: **Setup** > **Hardware**. You can add new Hardware add the bottom, in the list of hardware types choose for: **Enphase Envoy with micro inverters**.
 
 Fill out the parameters shown in the form. 
 
