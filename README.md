@@ -1,6 +1,9 @@
 # EnphaseEnvoy
 Enphase Envoy with LAN interface - **with individual micro inverters** (Domoticz plugin)
 
+Supports Enphase Envoy v5 formware (working on v7 firmware support)
+Tested with Domoticz 2022.1
+
 Monitor production (and log over time) each individual solar panel.
 
 This Domoticz plugin reads the Enphase Envoy interface and the individual micro inverters at the solar panels. The individual panels are polled and their power generated is updated in Domoticz. If new micro invertes (per solar panel) are added to your system, they automaticaly are added as new 'kWh' devices in your Domoticz.
@@ -10,7 +13,7 @@ This Domoticz plugin reads the Enphase Envoy interface and the individual micro 
 
 Installation and setup
 ----------------------
-Note: User credentials for the Envoy are required. In most cases is the username **envoy** and the password are the last 6 digits of the serialnumber of the Envoy. (When you start the plugin without entering credentials in the parameters, you can find this serial in your Domoticz log.)
+Note: User credentials for the Envoy are read from the internal xml file
 
 Follow the Domoticz guide on [Using Python Plugins](https://www.domoticz.com/wiki/Using_Python_plugins). Check limitations on the bottom of the page.
 
@@ -32,12 +35,6 @@ Open the Domoticz interface and go to: **Setup** > **Hardware**. You can add new
 Fill out the parameters shown in the form. 
 
 **NOTE** The user/pass for your Envoy is usually: 
-
-Username = **envoy**
-
-pass is **[the last 6 digits from the Envoy's serial]** 
-
-(When you start the plugin whout the credentials, your serial is logged in Domoticz log)
 
 Updating
 --------
