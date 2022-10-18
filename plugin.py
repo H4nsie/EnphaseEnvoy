@@ -3,22 +3,21 @@
 # Author: H4nsie
 #
 # Version
+# 1.0.4 - removed username / pass for Envoy parameters, as specs Enphase say that this is always 'evoy' + serial read from info.xml - 18 oct 2022
 # 1.0.3 - now using 243 as return devices - 15 oct 2022
 # 1.0.2 - minor corrections - 9 oct 2022
 # 1.0.0 - initial release - oct 2022
 
 """
-<plugin key="EnphaseEnvoy" name="Enphase Envoy - with micro inverters" author="H4nsie" version="1.0.3" wikilink="http://www.domoticz.com/" externallink="https://github.com/H4nsie/EnphaseEnvoy">
+<plugin key="EnphaseEnvoy" name="Enphase Envoy - with micro inverters" author="H4nsie" version="1.0.4" wikilink="http://www.domoticz.com/" externallink="https://github.com/H4nsie/EnphaseEnvoy">
     <description>
         <h2>Enphase Envoy - with micro inverters</h2><br/>
         <ul style="list-style-type:square">
-            <li>For login credentials use 'envoy' as username, and 'last 6 digits serial (see log)' as password</li>
+            <li>list</li>
         </ul>
     </description>
     <params>
         <param field="Address" label="IP" width="250px" required="true"/>
-        <param field="Username" label="Username" width="250px" />
-        <param field="Password" label="Password" width="250px" />
         <param field="Mode5" label="Log level" width="100px">
             <options>
                 <option label="Normal" value="Normal" default="true" />
@@ -40,7 +39,7 @@ class BasePlugin:
     enabled = False
     def __init__(self):
         #self.var = 123
-        self.freq = 2 #multiplier for Domoticz.Heartbeat (no need to update frequent as Envoy itself is updated only every 5 minutes.
+        self.freq = 2 #multiplier for Domoticz.Heartbeat (no need to update frequent as Envoy itself is updated only every 5 minutes.)
         self.running = True # be able to disable this pugin until restart, on connection error.
         return
 
@@ -71,13 +70,18 @@ class BasePlugin:
 
         # get serialnumber and test LAN connection to Envoy
         try:
-            jsonPCU = requests.get('http://' + Parameters["Address"] + '/inventory.json')
-            envoyserial=jsonPCU.json()[0]['devices'][0]['serial_num']
+            systemXML = requests.get('http://' + Parameters["Address"] + '/info.xml')
+            global envoyserial
+            if "<sn>" in systemXML.text:
+                envoyserial= systemXML.text.split("<sn>")[1].split("</sn>")[0]
+            else:
+                envoyserial = 'not found'
+
             Domoticz.Log("Connection made with Enphase envoy serial: "+envoyserial)
         except Exception as err:
             Domoticz.Debug("ConnectionException")
-            Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
-            self.running = False
+            Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}. Please restart plugin.".format(Parameters["Address"], err) )
+            self.running = False # stop the heartbeat
             return
 
 
@@ -105,8 +109,9 @@ class BasePlugin:
             Domoticz.Error( 'Could not connect to Envoy on {}, please check connection'.format(Parameters["Address"]))
         
         # GET INVERTER PRODUCTION (credentials needed)
-        jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' , auth=HTTPDigestAuth(Parameters["Username"], Parameters["Password"]))
-
+        
+        jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' , auth=HTTPDigestAuth('envoy', envoyserial[-6:]))
+        Domoticz.Log('Using credentials {} : {}'.format('envoy', envoyserial[-6:]))
         if (jsoninverters.status_code == 200):
             Domoticz.Debug("Envoy HTTP concection report status code: {}".format(str(jsoninverters.status_code)))
             #numberInverters = len(jsoninverters.json())
