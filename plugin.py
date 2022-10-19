@@ -3,7 +3,7 @@
 # Author: H4nsie
 #
 # Version
-# 1.0.5 - added distinction between Envoy firmware D5 and D7 - 19 oct 2022
+# 1.0.5 - added auto distinction between Envoy firmware D5 and D7 - 19 oct 2022
 # 1.0.4 - removed username / pass for Envoy parameters, as specs Enphase say that this is always 'evoy' + serial read from info.xml - 18 oct 2022
 # 1.0.3 - now using 243 as return devices - 15 oct 2022
 # 1.0.2 - minor corrections - 9 oct 2022
@@ -11,7 +11,7 @@
 
 # TODO
 # - fetch the owner token json from Enlighten API.
-# - implement and try "/auth/check_jwt" for update inverters every minute
+# - implement and try "/auth/check_jwt" for activate inverters communicate every minute
 
 """
 <plugin key="EnphaseEnvoy" name="Enphase Envoy - with micro inverters" author="H4nsie" version="1.0.5" wikilink="http://www.domoticz.com/" externallink="https://github.com/H4nsie/EnphaseEnvoy">
