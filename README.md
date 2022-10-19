@@ -34,7 +34,7 @@ Open the Domoticz interface and go to: **Setup** > **Hardware**. You can add new
 
 Fill out the parameters shown in the form. 
 
-**NOTE** The user/pass for your Envoy is usually: 
+**NOTE** When your Envoy is on D7 firmware, you must enter the session-id obtained at Enphase.
 
 Updating
 --------
