@@ -10,7 +10,7 @@
 # 1.0.0 - initial release - oct 2022
 
 # TODO
-# - fetch the owner token json from Enlighten API.
+# - fetch the (new, if expired) owner token json from Enlighten API.
 # - implement and try "/auth/check_jwt" for activate inverters communicate every minute
 
 """
@@ -76,7 +76,7 @@ class BasePlugin:
 
         # get serialnumber and version firmware and test LAN connection to Envoy
         try:
-            systemXML = requests.get('http://' + Parameters["Address"] + '/info.xml')
+            systemXML = requests.get('http://' + Parameters["Address"] + '/info.xml', verify=False)
             global envoyserial
             if "<sn>" in systemXML.text:
                 envoyserial= systemXML.text.split("<sn>")[1].split("</sn>")[0]
@@ -106,7 +106,7 @@ class BasePlugin:
         
         # GET TOTAL PRODUCTION (NOW AND EVER LIFETIME) (no credentials needed)
         try: 
-            jsonproduction = requests.get('http://' + Parameters["Address"] + '/production.json')
+            jsonproduction = requests.get('http://' + Parameters["Address"] + '/production.json', verify=False)
         except Exception as err:
             Domoticz.Debug("ConnectionException")
             Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
@@ -127,10 +127,19 @@ class BasePlugin:
         
         # GET INVERTER PRODUCTION (credentials or TokenID needed, depending on envoyfirmware)
         if (envoyfirmware == "D5"):
-            jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' , auth=HTTPDigestAuth('envoy', envoyserial[-6:]))
-            Domoticz.Debug('Using credentials {} : {}'.format('envoy', envoyserial[-6:]))
+            try:
+                jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' , auth=HTTPDigestAuth('envoy', envoyserial[-6:]))
+                Domoticz.Debug('Using credentials {} : {}'.format('envoy', envoyserial[-6:]))
+            except Exception as err:
+                Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
+                return
+
         if (envoyfirmware == "D7"):
-            jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' ,cookies=Parameters["SessionID"], verify=False)
+            try:
+                jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' ,cookies=Parameters["SessionID"], verify=False)
+            except Exception as err:
+                Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
+                return
         
         if (jsoninverters.status_code == 200):
             Domoticz.Debug("Envoy HTTP concection report status code: {}".format(str(jsoninverters.status_code)))
