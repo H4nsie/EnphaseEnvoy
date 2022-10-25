@@ -23,7 +23,7 @@
     </description>
     <params>
         <param field="Address" label="IP" width="250px" required="true"/>
-        <param field="SessionID" label="SessioID" width="250px" />
+        <param field="SessionID" label="SessionID" width="250px" />
         <param field="Mode5" label="Log level" width="100px">
             <options>
                 <option label="Normal" value="Normal" default="true" />
