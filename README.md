@@ -1,6 +1,9 @@
 # EnphaseEnvoy
 Enphase Envoy with LAN interface - **with individual micro inverters** (Domoticz plugin)
 
+
+**THIS IS THE DEVELOPMENT BRANCH. - There could be [issues](https://github.com/H4nsie/EnphaseEnvoy/issues) with this version.**
+
 Supports Enphase Envoy v5 and v7 firmware.
 Tested with Domoticz 2022.1
 
