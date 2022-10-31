@@ -3,6 +3,7 @@
 # Authors: H4nsie, claskfosmic, 0crap
 #
 # Version
+# 1.0.6 - [H4nsie] Added `password="true"` to the parameter field, so the password is hidden.
 # 1.0.6 - [claskfosmic] added login using Enlighten username and password in order to get the required sessionId automatically, in order to login on the local Envoy/IQ Gateway.
 # 1.0.5 - added auto distinction between Envoy firmware D5 and D7 - 19 oct 2022
 # 1.0.4 - removed username / pass for Envoy parameters, as specs Enphase say that this is always 'evoy' + serial read from info.xml - 18 oct 2022
@@ -24,7 +25,7 @@
     <params>
         <param field="Address" label="IP" width="250px" required="true"/>
         <param field="Username" label="Username" width="250px" />
-        <param field="Password" label="Password" width="250px" />
+        <param field="Password" label="Password" width="250px" password="true" />
         <param field="Mode5" label="Log level" width="100px">
             <options>
                 <option label="Normal" value="Normal" default="true" />
