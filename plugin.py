@@ -1,23 +1,31 @@
 # Enphase Enphase Envoy LAN micro inverters
 #
-# Author: H4nsie
+# Authors: H4nsie, claskfosmic, 0crap
 #
 # Version
+# 1.0.6 - [H4nsie] Added `password="true"` to the parameter field, so the password is hidden in the GUI.
+# 1.0.6 - [claskfosmic] added login using Enlighten username and password in order to get the required sessionId automatically, in order to login on the local Envoy/IQ Gateway.
+# 1.0.5 - added auto distinction between Envoy firmware D5 and D7 - 19 oct 2022
 # 1.0.4 - removed username / pass for Envoy parameters, as specs Enphase say that this is always 'evoy' + serial read from info.xml - 18 oct 2022
 # 1.0.3 - now using 243 as return devices - 15 oct 2022
 # 1.0.2 - minor corrections - 9 oct 2022
 # 1.0.0 - initial release - oct 2022
 
+# TODO
+# - implement and try "/auth/check_jwt" for activate inverters communicate every minute
+
 """
-<plugin key="EnphaseEnvoy" name="Enphase Envoy - with micro inverters" author="H4nsie" version="1.0.4" wikilink="http://www.domoticz.com/" externallink="https://github.com/H4nsie/EnphaseEnvoy">
+<plugin key="EnphaseEnvoy" name="Enphase Envoy - with micro inverters" author="H4nsie" version="1.0.6" wikilink="http://www.domoticz.com/" externallink="https://github.com/H4nsie/EnphaseEnvoy">
     <description>
         <h2>Enphase Envoy - with micro inverters</h2><br/>
         <ul style="list-style-type:square">
-            <li>list</li>
+            <li>Enlighten's username and password are only needed at Envoy's firmware 7.</li>
         </ul>
     </description>
     <params>
         <param field="Address" label="IP" width="250px" required="true"/>
+        <param field="Username" label="Username" width="250px" />
+        <param field="Password" label="Password" width="250px" password="true" />
         <param field="Mode5" label="Log level" width="100px">
             <options>
                 <option label="Normal" value="Normal" default="true" />
@@ -41,8 +49,8 @@ class BasePlugin:
         #self.var = 123
         self.freq = 2 #multiplier for Domoticz.Heartbeat (no need to update frequent as Envoy itself is updated only every 5 minutes.)
         self.running = True # be able to disable this pugin until restart, on connection error.
+        self.sessionId = ''
         return
-
 
     def onStart(self):
 
@@ -55,45 +63,122 @@ class BasePlugin:
         
         Domoticz.Log("Plugin has " + str(len(Devices)) + " devices associated with it.")
 
-		# set Heartbeat and freq        
+        # set Heartbeat and freq        
         Domoticz.Heartbeat(10)    
         self.beatcount = self.freq*2
         Domoticz.Debug("beatcount :" + str(self.beatcount))
         self.heartbeat = self.beatcount
 
-		# create P1 usage device if not yet created
+        # create P1 usage device if not yet created
         if (len(Devices) == 0):
             Domoticz.Device(Name="total", Unit=1, Type=250, Subtype=1, Used=1, DeviceID='EnphaseEnvoyUsage').Create()
             UpdateDevice(Unit=1, nValue=0, sValue="0;0;0;0;0", TimedOut=0)
             Domoticz.Debug("Device EnphaseEnvoyUsage created")
-            
 
-        # get serialnumber and test LAN connection to Envoy
+        # get serialnumber and version firmware and test LAN connection to Envoy
         try:
-            systemXML = requests.get('http://' + Parameters["Address"] + '/info.xml')
+            systemXML = requests.get('http://' + Parameters["Address"] + '/info.xml', verify=False)
             global envoyserial
             if "<sn>" in systemXML.text:
                 envoyserial= systemXML.text.split("<sn>")[1].split("</sn>")[0]
             else:
                 envoyserial = 'not found'
+            global envoyfirmware
+            if "<software>" in systemXML.text:
+                envoyfirmware= systemXML.text.split("<software>")[1].split("</software>")[0][:2] #note [:2] first 2 chars
+            else:
+                envoyfirmware = 'not found'            
 
             Domoticz.Log("Connection made with Enphase envoy serial: "+envoyserial)
+            Domoticz.Log("Enphase envoy firmware is: "+envoyfirmware)
+        
         except Exception as err:
             Domoticz.Debug("ConnectionException")
             Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}. Please restart plugin.".format(Parameters["Address"], err) )
             self.running = False # stop the heartbeat
             return
-
+            
+        if (not envoyfirmware =="D5" and not envoyfirmware=="D7"):
+            Domoticz.Error("Error this firmware ({}) of Envoy is not supported by this plugin.".format(envoyfirmware))
+            self.running = False # stop the heartbeat
+            return
 
     def getData(self):
+
+        if envoyfirmware == 'D7' and self.sessionId == '':
+
+            # Go login with Enphase Enlighten Account
+            #
+            data = {
+                'user[email]': Parameters["Username"],
+                'user[password]': Parameters["Password"]
+            }
+            try:
+                response = requests.post('https://enlighten.enphaseenergy.com/login/login.json?', data=data)
+            except Exception as err:
+                Domoticz.Debug("ConnectionException")
+                Domoticz.Error("Error connecting to Enphase Enlighten on enlighten.enphaseenergy.com - Error: {}".format(err) )
+                return
+
+            response_data = json.loads(response.text)
+            Domoticz.Debug("Got sessionId '" + response_data['session_id'] + "' from Enphase Enlighten.")
+
+            # Get authToken
+            #
+            data = {
+                'session_id': response_data['session_id'],
+                'serial_num': envoyserial,
+                'username': Parameters["Username"]
+            }
+
+            try:
+                response = requests.post('https://entrez.enphaseenergy.com/tokens', json=data)
+            except Exception as err:
+                Domoticz.Debug("ConnectionException")
+                Domoticz.Error("Error connecting to Enphase Energy on entrez.enphaseenergy.com - Error: {}".format(err) )
+                return
+
+            authToken = response.text
+            Domoticz.Debug("Got authToken '" + authToken + "' from Enphase Energy.")
+
+            if authToken != "":
+
+                # Validate token on IQ Gateway
+                #
+                headers = {
+                    "Authorization": "Bearer " + authToken
+                }
+                response = requests.get('https://' + Parameters["Address"] + '/auth/check_jwt', headers=headers, verify=False)
+
+                # Check response, a valid response will look like: <!DOCTYPE html><h2>Valid token.</h2>
+                #
+                if "Valid token." in response.text:
+
+                    # Extract the sessionId from the cookies.
+                    #
+                    self.sessionId = response.cookies['sessionId']
+
+            if self.sessionId != '':
+                Domoticz.Debug("Got sessionId '" + self.sessionId + "' from {}".format(Parameters["Address"]) )
+            else:
+                Domoticz.Error("Error getting sessionId and/or authToken using Enphase Enlighten username and password.")
         
         # GET TOTAL PRODUCTION (NOW AND EVER LIFETIME) (no credentials needed)
-        try: 
-            jsonproduction = requests.get('http://' + Parameters["Address"] + '/production.json')
-        except Exception as err:
-            Domoticz.Debug("ConnectionException")
-            Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
-            return	
+        if (envoyfirmware == "D5"):
+            try: 
+                jsonproduction = requests.get('http://' + Parameters["Address"] + '/production.json', verify=False)
+            except Exception as err:
+                Domoticz.Debug("ConnectionException")
+                Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
+                return  
+
+        if (envoyfirmware == "D7"):
+            try:
+                jsonproduction = requests.get('https://' + Parameters["Address"] + '/production.json', cookies=dict(sessionid=self.sessionId), verify=False)
+            except Exception as err:
+                Domoticz.Debug("ConnectionException")
+                Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
+                return
             
         if (jsonproduction.status_code == 200):
             production=jsonproduction.json()['production'][0]
@@ -108,10 +193,22 @@ class BasePlugin:
         else:
             Domoticz.Error( 'Could not connect to Envoy on {}, please check connection'.format(Parameters["Address"]))
         
-        # GET INVERTER PRODUCTION (credentials needed)
+        # GET INVERTER PRODUCTION (credentials or TokenID needed, depending on envoyfirmware)
+        if (envoyfirmware == "D5"):
+            try:
+                jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' , auth=HTTPDigestAuth('envoy', envoyserial[-6:]))
+                Domoticz.Debug('Using credentials {} : {}'.format('envoy', envoyserial[-6:]))
+            except Exception as err:
+                Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
+                return
+
+        if (envoyfirmware == "D7"):
+            try:
+                jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' ,cookies=dict(sessionid=self.sessionId), verify=False)
+            except Exception as err:
+                Domoticz.Error("Error connecting to Enphase Envoy on {} error: {}".format(Parameters["Address"], err) )
+                return
         
-        jsoninverters = requests.get('http://' + Parameters["Address"] + '/api/v1/production/inverters/' , auth=HTTPDigestAuth('envoy', envoyserial[-6:]))
-        Domoticz.Log('Using credentials {} : {}'.format('envoy', envoyserial[-6:]))
         if (jsoninverters.status_code == 200):
             Domoticz.Debug("Envoy HTTP concection report status code: {}".format(str(jsoninverters.status_code)))
             #numberInverters = len(jsoninverters.json())
@@ -131,7 +228,7 @@ class BasePlugin:
                         Domoticz.Log("Inverter {} reads {} Watts".format(inverter['serialNumber'], inverter['lastReportWatts']))
                         UpdateDevice(Unit=Devices[Device].Unit, nValue=0, sValue=str(inverter['lastReportWatts'])+";0", TimedOut=0)
                         
-				# CREATE new device for this SN
+                # CREATE new device for this SN
                 if not DeviceFound:
                     iUnit=len(Devices)+1
                     Domoticz.Device(Unit=iUnit, DeviceID=str(inverter['serialNumber']), Name="panel "+str(inverter['serialNumber']), TypeName='kWh', Subtype=29, Used=1, Switchtype=4, Options={'EnergyMeterMode':'1'}).Create()
