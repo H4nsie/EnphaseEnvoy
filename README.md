@@ -2,8 +2,8 @@
 Enphase Envoy with LAN interface - **with individual micro inverters** (Domoticz plugin)
 
 Supports Enphase Envoy v5 AND v7 firmware!
-(For firmware V7 credentials are requested)
-Tested with Domoticz 2022.2
+(For firmware V7 credentials are automatically requested)
+Tested with Domoticz 2023.1
 
 Monitor production (and log over time) each individual solar panel.
 
