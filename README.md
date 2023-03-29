@@ -34,7 +34,6 @@ Open the Domoticz interface and go to: **Setup** > **Hardware**. You can add new
 
 Fill out the parameters shown in the form. 
 
-**NOTE** The user/pass for your Envoy is usually: 
 
 Updating
 --------
