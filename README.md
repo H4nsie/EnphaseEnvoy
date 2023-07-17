@@ -1,3 +1,5 @@
+**NOT MAINTAINED ANYMORE. SINCE THIS FUNCTION IS IMPLEMENTED IN DOMOTICZ v2023.+**
+
 # EnphaseEnvoy
 Enphase Envoy with LAN interface - **with individual micro inverters** (Domoticz plugin)
 
